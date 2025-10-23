@@ -20,9 +20,9 @@ list_of_file=[
     "param/params.yaml",
     "app.py",
     "main.py",
-    ".gitignore"
+    ".gitignore",
     "Dockerfile",
-    ".dockerignore"
+    ".dockerignore",
     "requirements.txt",
     "setup.py"
 ]
