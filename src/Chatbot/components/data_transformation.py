@@ -1,10 +1,11 @@
-from src.constants import *
-from src.utils.common import *
-from src.entity import DataTransformationConfig, DataIngestionConfig
-from src.logging import logger
-from src.config.configration import ConfigrationManager
+from src.Chatbot.constants import *
+from src.Chatbot.utils.common import *
+from src.Chatbot.entity import DataTransformationConfig, DataIngestionConfig
+from src.Chatbot.logging  import logger
+from src.Chatbot.components.data_ingestion import DataIngestion
+from src.Chatbot.config.configration import ConfigurationManager
 from pathlib import Path
-from datasets import load_from_disk, Dataset, concatenate_datasets
+from datasets import load_from_disk, Dataset, concatenate_datasets,load_dataset
 from transformers import AutoTokenizer
 import os
 
@@ -14,12 +15,15 @@ class DataTransformation:
         self.tokenizer = AutoTokenizer.from_pretrained(self.config.tokenizer_name)
 
     def load_data(self):
-        """Load dataset from data_ingested folder"""
-        logger.info(f" Loading dataset from {self.config.data_path}")
-        dataset = load_from_disk(self.config.data_path)
-        return dataset
+      """Load dataset from data_ingested folder"""
+      logger.info(f" Loading dataset from {self.config.data_path}")
 
-    def prepare_conversation_pairs(self, dataset, batch_size=500000):
+      parquet_path = os.path.join(self.config.data_path, "train.parquet")
+      dataset = load_dataset("parquet", data_files=parquet_path)["train"]
+
+      logger.info(f" Dataset loaded with {len(dataset)} samples")
+      return dataset
+    def prepare_conversation_pairs(self, dataset, batch_size=300000):
         logger.info("Converting conversations into input-target pairs...")
 
         all_datasets = []
@@ -102,12 +106,15 @@ class DataTransformation:
 
             batch_save_path = os.path.join(self.config.transformed_data_path, f"tokenized_batch_{i+1}")
             tokenized_subset.save_to_disk(batch_save_path)
-            logger.info(f"✅ Saved tokenized batch {i+1} → {batch_save_path}")
+            logger.info(f" Saved tokenized batch {i+1} → {batch_save_path}")
 
-        logger.info("✅ All batches tokenized and saved successfully!")
+        logger.info(" All batches tokenized and saved successfully!")
 
 if __name__ == "__main__":
-    config = ConfigrationManager()
+    config = ConfigurationManager()
+    #data_ingestion_config=config.get_data_ingestion_config()
+    #data_ingested=DataIngestion(config=data_ingestion_config)
+    #data_ingested.extract_data()
     data_transformation_config = config.get_data_transformation_config()
     transformer = DataTransformation(config=data_transformation_config)
     transformer.transform_and_save()

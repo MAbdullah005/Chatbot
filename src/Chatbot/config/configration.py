@@ -1,5 +1,5 @@
 from src.Chatbot.constants import *
-from src.Chatbot.utils.common import read_yaml, create_directories
+from src.Chatbot.utils.common import read_yaml,create_directories
 
 from src.Chatbot.entity import DataIngestionConfig,ModelEvaluationConfig,DataTransformationConfig,ModelTrainerConfig
 
@@ -20,7 +20,8 @@ class ConfigurationManager:
             root_dir=config.root_dir,
             source_URL=config.source_URL,
             local_data_file=config.local_data_file,
-            unzip_dir=config.unzip_dir
+            dataset=config.dataset,
+            token_id=config.token_id
 
         )
 
@@ -34,7 +35,8 @@ class ConfigurationManager:
         data_transformation_config=DataTransformationConfig(
             root_dir=config.root_dir,
             data_path=config.data_path,
-            tokenizer_name=config.tokenizer_name
+            tokenizer_name=config.tokenizer_name,
+            transformed_data_path=config.transformed_data_path
         )
 
         return data_transformation_config
