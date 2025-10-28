@@ -1,7 +1,14 @@
 from datasets import load_dataset
 from src.Chatbot.entity import DataIngestionConfig
 from src.Chatbot.logging import logger
+from dotenv import load_dotenv
+import os
 from pathlib import Path
+
+load_dotenv()
+
+HF_TOKEN = os.environ.get("HF_TOKEN")
+
 
 class DataIngestion:
     def __init__(self, config: DataIngestionConfig):
@@ -13,7 +20,7 @@ class DataIngestion:
         (compatible with `load_from_disk()`).
         """
         logger.info(f" Loading dataset {self.config.dataset} from Hugging Face...")
-        dataset = load_dataset(self.config.dataset, token=self.config.token_id)
+        dataset = load_dataset(self.config.dataset, token=self.config.HF_TOKEN)
 
         # Ensure directory exists
         save_dir = Path(self.config.local_data_file)

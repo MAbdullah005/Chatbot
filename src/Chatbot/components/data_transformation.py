@@ -5,9 +5,15 @@ from src.Chatbot.logging  import logger
 from src.Chatbot.components.data_ingestion import DataIngestion
 from src.Chatbot.config.configration import ConfigurationManager
 from pathlib import Path
+from dotenv import load_dotenv
 from datasets import load_from_disk, Dataset, concatenate_datasets,load_dataset
 from transformers import AutoTokenizer
 import os
+
+load_dotenv()
+
+HF_TOKEN = os.environ.get("HF_TOKEN")
+
 
 class DataTransformation:
     def __init__(self, config: DataTransformationConfig):
