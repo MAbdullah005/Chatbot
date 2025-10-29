@@ -21,7 +21,7 @@ class ConfigurationManager:
             source_URL=config.source_URL,
             local_data_file=config.local_data_file,
             dataset=config.dataset,
-            token_id=config.token_id
+           # token_id=config.token_id
 
         )
 
@@ -51,6 +51,7 @@ class ConfigurationManager:
             root_dir=config.root_dir,
             data_path=config.data_path,
             model_ckpt = config.model_ckpt,
+            model_save_path=config.model_save_path,
             num_train_epochs = params.num_train_epochs,
             warmup_steps = params.warmup_steps,
             per_device_train_batch_size = params.per_device_train_batch_size,
