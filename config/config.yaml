@@ -23,8 +23,8 @@ model_trainer:
 
 model_evaluation:
   root_dir: artifacts/model_evaluation
-  data_path: artifacts/data_transformation/model_name
-  model_path: artifacts/model_trainer/model_name
+  data_path: artifacts/data_transformation/train
+  model_path: artifacts/model_trainer
   tokenizer_path: artifacts/model_trainer/tokenizer
   metric_file_name: artifacts/model_evaluation/metrics.csv
   
