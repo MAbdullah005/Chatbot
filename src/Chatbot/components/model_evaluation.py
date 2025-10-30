@@ -4,12 +4,11 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.
 
 from pathlib import Path
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
-from datasets import load_from_disk,concatenate_datasets
+from datasets import load_from_disk, concatenate_datasets
 from evaluate import load as load_metric
 from src.Chatbot.logging import logger
 from src.Chatbot.config.configration import ConfigurationManager
 from src.Chatbot.entity import ModelEvaluationConfig
-
 
 
 class ModelEvaluation:
@@ -33,7 +32,7 @@ class ModelEvaluation:
 
     def load_data(self):
         """Load and combine all tokenized batches"""
-        logger.info(f"Loading tokenized batches from {self.config.data_path}")
+        logger.info(f" Loading tokenized batches from {self.config.data_path}")
 
         dataset_list = []
         for batch_dir in Path(self.config.data_path).glob("tokenized_batch_*"):
@@ -41,7 +40,7 @@ class ModelEvaluation:
             dataset_list.append(dataset)
 
         full_dataset = concatenate_datasets(dataset_list)
-        logger.info(f"✅ Loaded total {len(full_dataset)} samples.")
+        logger.info(f" Loaded total {len(full_dataset)} samples.")
         return full_dataset
 
     def evaluate(self):
@@ -50,19 +49,18 @@ class ModelEvaluation:
         dataset_split = eval_data.train_test_split(test_size=0.1, seed=42)
         eval_data = dataset_split["test"]
 
-        preds = []
-        refs = []
+        # Limit to 1000 samples for speed
         eval_data = eval_data.select(range(1000))
 
+        preds, refs = [], []
 
         logger.info(" Generating predictions...")
         for example in eval_data:
-          # input_text = example["input_text"]
+            # Decode input and target sequences
             input_text = self.tokenizer.decode(example["input_ids"], skip_special_tokens=True)
             target_text = self.tokenizer.decode(example["labels"], skip_special_tokens=True)
 
-            #target_text = example["target_text"]
-
+            # Tokenize and generate prediction
             inputs = self.tokenizer(
                 input_text,
                 return_tensors="pt",
@@ -82,19 +80,34 @@ class ModelEvaluation:
             preds.append(pred_text)
             refs.append(target_text)
 
-        # Compute BLEU and ROUGE metrics
+        # Clean text to avoid BLEU format issues
+        def clean_text(text):
+            if isinstance(text, list):
+                text = " ".join(map(str, text))
+            elif isinstance(text, dict):
+                text = str(text.get("content", ""))
+            return str(text).strip()
+
+        clean_preds = [clean_text(p) for p in preds]
+        clean_refs = [clean_text(r) for r in refs]
+
+        # Debug example
+        logger.info(f" Sample prediction: {clean_preds[0][:100]}")
+        logger.info(f" Sample reference: {clean_refs[0][:100]}")
+
+        # Compute BLEU and ROUGE
         logger.info(" Calculating BLEU and ROUGE scores...")
-        rouge = load_metric("rouge")
         bleu = load_metric("bleu")
+        rouge = load_metric("rouge")
 
         bleu_score = bleu.compute(
-            predictions=[p.split() for p in preds],
-            references=[[r.split()] for r in refs]
+            predictions=clean_preds,
+            references=clean_refs
         )["bleu"]
 
         rouge_score = rouge.compute(
-            predictions=preds,
-            references=refs,
+            predictions=clean_preds,
+            references=clean_refs,
             rouge_types=["rouge1", "rouge2", "rougeL"]
         )
 
@@ -105,11 +118,12 @@ class ModelEvaluation:
         os.makedirs(Path(self.config.root_dir), exist_ok=True)
         metrics_path = Path(self.config.metric_file_name)
         with open(metrics_path, "w", encoding="utf-8") as f:
-            f.write("metric,value\n")
-            f.write(f"BLEU,{bleu_score:.4f}\n")
-            for key, value in rouge_score.items():
-                f.write(f"{key},{value.mid.fmeasure:.4f}\n")
-
+          f.write("metric,value\n")
+          f.write(f"BLEU,{bleu_score:.4f}\n")
+          for key, value in rouge_score.items():
+            # Handle both np.float64 and rouge.Score objects safely
+             score = value.mid.fmeasure if hasattr(value, "mid") else float(value)
+             f.write(f"{key},{score:.4f}\n")
         logger.info(f" Metrics saved to: {metrics_path}")
         return {"bleu": bleu_score, "rouge": rouge_score}
 
