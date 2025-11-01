@@ -5,21 +5,24 @@ from pathlib import Path
 class DataIngestionConfig:
     root_dir: Path
     source_URL: Path
-    local_data_file: Path
+    local_data_file_train: Path
+    local_data_file_test: Path
     dataset: str
-    token_id: str
+    #token_id: str
 
 @dataclass
 class DataTransformationConfig:
     root_dir: Path
     data_path: Path
     tokenizer_name: Path
-    transformed_data_path: Path
+    transformed_data_path_train: Path
+    transformed_data_path_test: Path
 
 @dataclass
 class ModelTrainerConfig:
     root_dir: Path
-    data_path: Path
+    data_path_train: Path
+    data_path_test: Path
     model_ckpt: Path
     model_save_path:Path
     num_train_epochs: int

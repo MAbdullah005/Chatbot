@@ -4,7 +4,8 @@ artifacts_root: artifacts
 data_ingestion:
   root_dir: artifacts/data_ingestion
   source_URL: https://huggingface.co/datasets/lmsys/lmsys-chat-1m
-  local_data_file: artifacts/data_ingestion
+  local_data_file_train: artifacts/data_ingestion/train
+  local_data_file_test: artifacts/data_ingestion/test
   dataset: lmsys/lmsys-chat-1m
  # token_id: HF_TOKEN
  
@@ -12,19 +13,21 @@ data_ingestion:
 data_transformation:
   root_dir: artifacts/data_transformation
   data_path: artifacts/data_ingestion
-  transformed_data_path: artifacts/data_transformation/train
+  transformed_data_path_train: artifacts/data_transformation/train
+  transformed_data_path_test: artifacts/data_transformation/test
   tokenizer_name: t5-small
 
 model_trainer:
   root_dir: artifacts/model_trainer
-  data_path: artifacts/data_transformation/train
+  data_path_train: artifacts/data_transformation/train
+  data_path_test: artifacts/data_transformation/test
   model_ckpt: t5-small
   model_save_path: artifacts/model_trainer/t5-small-trained
 
 model_evaluation:
   root_dir: artifacts/model_evaluation
-  data_path: artifacts/data_transformation/train
-  model_path: artifacts/model_trainer
+  data_path: artifacts/data_transformation/test
+  model_path: artifacts/model_trainer/t5-small-trained
   tokenizer_path: artifacts/model_trainer/tokenizer
   metric_file_name: artifacts/model_evaluation/metrics.csv
   
