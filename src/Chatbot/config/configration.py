@@ -19,7 +19,8 @@ class ConfigurationManager:
         data_ingestion_config=DataIngestionConfig(
             root_dir=config.root_dir,
             source_URL=config.source_URL,
-            local_data_file=config.local_data_file,
+            local_data_file_train=config.local_data_file_train,
+            local_data_file_test=config.local_data_file_test,
             dataset=config.dataset,
            # token_id=config.token_id
 
@@ -36,7 +37,8 @@ class ConfigurationManager:
             root_dir=config.root_dir,
             data_path=config.data_path,
             tokenizer_name=config.tokenizer_name,
-            transformed_data_path=config.transformed_data_path
+            transformed_data_path_train=config.transformed_data_path_train,
+            transformed_data_path_test=config.transformed_data_path_test
         )
 
         return data_transformation_config
@@ -49,7 +51,8 @@ class ConfigurationManager:
 
         model_trainer_config=ModelTrainerConfig(
             root_dir=config.root_dir,
-            data_path=config.data_path,
+            data_path_train=config.data_path_train,
+            data_path_test=config.data_path_test,
             model_ckpt = config.model_ckpt,
             model_save_path=config.model_save_path,
             num_train_epochs = params.num_train_epochs,
