@@ -47,3 +47,6 @@ def create_directories(path_to_directories: list, verbose=True):
  
     except Exception as e:
       raise FileNotFoundError(e)
+    
+
+
