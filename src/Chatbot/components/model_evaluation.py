@@ -33,8 +33,8 @@ class ModelEvaluation:
 
         # Load model and tokenizer
         logger.info(" Loading model and tokenizer...")
-       # self.model = AutoModelForSeq2SeqLM.from_pretrained(model_dir)
-        #self.tokenizer = AutoTokenizer.from_pretrained(model_dir)
+        self.model = AutoModelForSeq2SeqLM.from_pretrained(model_dir)
+        self.tokenizer = AutoTokenizer.from_pretrained(model_dir)
 
     def load_data(self):
         """Load and combine all tokenized data batches."""
@@ -127,7 +127,7 @@ class ModelEvaluation:
 
         logger.info(" Generating predictions...")
         for i, example in enumerate(eval_data):
-            if (i + 1) % 50 == 0:
+            if (i + 1) % 10 == 0:
                 logger.info(f"Generated {i + 1} samples...")
 
             input_text = self.tokenizer.decode(example["input_ids"], skip_special_tokens=True)

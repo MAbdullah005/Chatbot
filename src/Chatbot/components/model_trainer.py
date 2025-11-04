@@ -55,13 +55,13 @@ class ModelTrainer:
         logger.info(f" Train samples: {len(train_data)} | Eval samples: {len(eval_data)}")
 
         # Use only a subset for faster training (for testing)
-        train_data = train_data.select(range(min(30, len(train_data))))
-        eval_data = eval_data.select(range(min(15, len(eval_data))))
+        train_data = train_data.select(range(min(10, len(train_data))))
+        eval_data = eval_data.select(range(min(5, len(eval_data))))
 
         # === Training arguments ===
         training_args = TrainingArguments(
             output_dir=self.config.root_dir,
-            evaluation_strategy="epoch",   #  correct param name (not eval_strategy)
+            eval_strategy="epoch",   #  correct param name (not eval_strategy)
             learning_rate=2e-5,
             per_device_train_batch_size=4,
             per_device_eval_batch_size=4,
@@ -74,9 +74,9 @@ class ModelTrainer:
             load_best_model_at_end=True,   #  saves the best model automatically
             push_to_hub=False
         )
-        config = ConfigurationManager()
-        eval_config = config.get_model_evaluation_config()
-        evaluator = ModelEvaluation(config=eval_config)
+       # config = ConfigurationManager()
+       # eval_config = config.get_model_evaluation_config()
+       # evaluator = ModelEvaluation(config=eval_config)
 
         # === Trainer ===
         trainer = Trainer(
@@ -85,7 +85,7 @@ class ModelTrainer:
             train_dataset=train_data,
             eval_dataset=eval_data,
             tokenizer=self.tokenizer,
-            compute_metrics=evaluator.compute_metrics
+            #compute_metrics=evaluator.compute_metrics
         )
 
         # === Start training ===
