@@ -1,4 +1,4 @@
-from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, TrainingArguments, Trainer
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, TrainingArguments, Trainer,GPT2Tokenizer,AutoModelForCausalLM
 import sys
 import os
 from pathlib import Path
@@ -18,8 +18,10 @@ from src.Chatbot.logging import logger
 class ModelTrainer:
     def __init__(self, config: ModelTrainerConfig):
         self.config = config
-        self.tokenizer = AutoTokenizer.from_pretrained(config.model_ckpt)
-        self.model = AutoModelForSeq2SeqLM.from_pretrained(config.model_ckpt)
+        self.tokenizer = GPT2Tokenizer.from_pretrained(config.model_ckpt)
+        self.model = AutoModelForCausalLM.from_pretrained(config.model_ckpt)
+        self.tokenizer.pad_token = self.tokenizer.eos_token
+        self.model.config.pad_token_id = self.tokenizer.eos_token_id
 
     def load_batches_from_dir(self, batch_dirs, dir_path):
         """
@@ -55,8 +57,8 @@ class ModelTrainer:
         logger.info(f" Train samples: {len(train_data)} | Eval samples: {len(eval_data)}")
 
         # Use only a subset for faster training (for testing)
-        train_data = train_data.select(range(min(10, len(train_data))))
-        eval_data = eval_data.select(range(min(5, len(eval_data))))
+        train_data = train_data.select(range(min(30000, len(train_data))))
+        eval_data = eval_data.select(range(min(3000, len(eval_data))))
 
         # === Training arguments ===
         training_args = TrainingArguments(
@@ -99,8 +101,12 @@ class ModelTrainer:
         logger.info(f" Model saved at: {model_save_path}")
 
 
+
+
+
 if __name__ == "__main__":
     config = ConfigurationManager()
     trainer_config = config.get_model_trainer_config()
     trainer = ModelTrainer(config=trainer_config)
     trainer.train()
+

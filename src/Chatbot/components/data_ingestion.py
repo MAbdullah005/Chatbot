@@ -19,6 +19,7 @@ HF_TOKEN = os.environ.get("HF_TOKEN")
 class DataIngestion:
     def __init__(self, config: DataIngestionConfig):
         self.config = config
+        os.makedirs(self.config.root_dir, exist_ok=True)
 
     def extract_data(self):
       """
@@ -38,21 +39,29 @@ class DataIngestion:
     #  Ensure directories exist
       train_dir = Path(self.config.local_data_file_train)
       test_dir = Path(self.config.local_data_file_test)
-      train_dir.mkdir(parents=True, exist_ok=True)
-      test_dir.mkdir(parents=True, exist_ok=True)
+      os.makedirs(train_dir, exist_ok=True)
+      os.makedirs(test_dir, exist_ok=True)
+
+      #train_dir.mkdir(parents=True, exist_ok=True)
+      #test_dir.mkdir(parents=True, exist_ok=True)
 
     #  Save both splits in Hugging Face Arrow format
       logger.info(f" Saving train split to {train_dir} ...")
-      dataset["train"].save_to_disk(str(train_dir))
+     # dataset["train"].save_to_disk(str(train_dir.resolve()))
 
       logger.info(f" Saving test split to {test_dir} ...")
-      dataset["test"].save_to_disk(str(test_dir))
+      #dataset["test"].save_to_disk(str(test_dir.resolve()))
+
+      dataset["train"].save_to_disk(str(Path(train_dir).resolve()))
+      dataset["test"].save_to_disk(str(Path(test_dir).resolve()))
 
       logger.info(" Dataset successfully downloaded, split, and saved in Arrow format.")
       return dataset
+
 
 if __name__=='__main__':
     config = ConfigurationManager()
     data_ingestion_config=config.get_data_ingestion_config()
     data_ingested=DataIngestion(config=data_ingestion_config)
     data_ingested.extract_data()
+  

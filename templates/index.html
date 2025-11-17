@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chatbot</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h2>🤖 AI Chatbot</h2>
+            <p>Ask me anything — powered by your fine-tuned model</p>
+        </div>
+
+        <div class="chat-box" id="chatBox">
+            <div class="bot-message">
+                Hello! 👋 I’m your AI assistant. How can I help you today?
+            </div>
+        </div>
+
+        <form id="chatForm" class="chat-input">
+            <input type="text" id="userInput" placeholder="Type your message..." required />
+            <button type="submit">Send</button>
+        </form>
+    </div>
+
+    <script>
+        const chatForm = document.getElementById('chatForm');
+        const chatBox = document.getElementById('chatBox');
+        const userInput = document.getElementById('userInput');
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userText = userInput.value.trim();
+            if (!userText) return;
+
+            const userMsg = document.createElement('div');
+            userMsg.classList.add('user-message');
+            userMsg.textContent = userText;
+            chatBox.appendChild(userMsg);
+            userInput.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            const botMsg = document.createElement('div');
+            botMsg.classList.add('bot-message');
+            botMsg.textContent = "⏳ Thinking...";
+            chatBox.appendChild(botMsg);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            try {
+                const response = await fetch("/predict", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ text: userText }),
+                });
+
+                const data = await response.json();
+                botMsg.textContent = data.reply || "⚠️ Sorry, I couldn’t generate a response.";
+            } catch (error) {
+                botMsg.textContent = "❌ Error: Unable to connect to the chatbot API.";
+            }
+
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+    </script>
+</body>
+
+</html>

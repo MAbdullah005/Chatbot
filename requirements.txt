@@ -1,5 +1,11 @@
 pandas
 numpy
 scikit-learn
+transformers[torch]
 transformers
+torch
+ensure
+sacrebleu
 datasets
+python-box
+evaluate

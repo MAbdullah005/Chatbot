@@ -3,7 +3,7 @@ import sys
 import csv
 import ast
 from pathlib import Path
-from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer,AutoModelForCausalLM
 from datasets import load_from_disk, concatenate_datasets
 import sacrebleu
 import numpy as np
@@ -33,7 +33,7 @@ class ModelEvaluation:
 
         # Load model and tokenizer
         logger.info(" Loading model and tokenizer...")
-        self.model = AutoModelForSeq2SeqLM.from_pretrained(model_dir)
+        self.model = AutoModelForCausalLM.from_pretrained(model_dir)
         self.tokenizer = AutoTokenizer.from_pretrained(model_dir)
 
     def load_data(self):
@@ -121,7 +121,7 @@ class ModelEvaluation:
     def evaluate(self):
         """Generate predictions, compute metrics, and save outputs."""
         eval_data = self.load_data()
-        eval_data = eval_data.select(range(min(20, len(eval_data))))
+        eval_data = eval_data.select(range(min(1000, len(eval_data))))
 
         preds, refs = [], []
 
@@ -138,6 +138,14 @@ class ModelEvaluation:
 
             if not input_clean.strip() or not target_clean.strip():
                 continue
+            full_text = self.tokenizer.decode(example["input_ids"], skip_special_tokens=True)
+            if "Assistant:" in full_text:
+              parts = full_text.split("Assistant:", 1)
+              input_clean = parts[0] + "Assistant:"
+              target_clean = parts[1].strip()
+            else:
+              input_clean = full_text
+              target_clean = ""
 
             inputs = self.tokenizer(
                 input_clean,
@@ -148,12 +156,15 @@ class ModelEvaluation:
             )
 
             outputs = self.model.generate(
-                **inputs,
-                max_length=128,
-                num_beams=4,
-                early_stopping=True
-            )
-
+               **inputs,
+             #  max_length=128,
+               max_new_tokens=110,
+               num_beams=4,
+               do_sample=True,
+               top_p=0.9,
+               temperature=0.8,
+               pad_token_id=self.tokenizer.eos_token_id
+               )
             pred_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
             preds.append(pred_text)
             refs.append(target_clean)
@@ -204,6 +215,9 @@ class ModelEvaluation:
         logger.info(f" Sample predictions saved to: {predictions_path}")
 
         return {"bleu": bleu_score, "rouge": rouge_score}
+    
+    
+"""
 
 
 if __name__ == "__main__":
@@ -214,3 +228,5 @@ if __name__ == "__main__":
 
     print("\n Evaluation complete.")
     print(results)
+
+    """
